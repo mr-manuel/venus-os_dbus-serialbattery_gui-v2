@@ -15,4 +15,4 @@ wget -O - https://raw.githubusercontent.com/mr-manuel/venus-os_dbus-serialbatter
 
 ## How to open
 
-Open your browser and navigate to [http://venusos/gui-battery](http://venusos/gui-battery).
+Open your browser and navigate to [http://venus.local/gui-v2](http://venus.local/gui-v2) or whatever the IP address or hostname of your GX device is.
