@@ -8,16 +8,20 @@ if [ $freeSpace -lt 20 ]; then
     bash /opt/victronenergy/swupdate-scripts/resize2fs.sh
 
     freeSpace=$(df -m / | awk 'NR==2 {print $4}')
-    if [ $freeSpace -lt 8 ]; then
+    if [ $freeSpace -lt 20 ]; then
         echo
         echo
-        echo "ERROR: Not enough free space on the system partition. At least 8 MB are required."
+        echo "ERROR: Not enough free space on the system partition. At least 20 MB are required."
         echo
         echo "       Please please try to execute this command"
         echo
         echo "       bash /opt/victronenergy/swupdate-scripts/resize2fs.sh"
         echo
         echo "       and try the installation again after."
+        echo
+        echo "       If the problem persists, try to (re)install the latest Venus OS update with:"
+        echo
+        echo "       /opt/victronenergy/swupdate-scripts/check-updates.sh -update -force"
         echo
         echo
         exit 1
@@ -33,7 +37,6 @@ fi
 
 
 # handle read only mounts
-# TODO: system should not remain in read-only mode
 bash /opt/victronenergy/swupdate-scripts/remount-rw.sh
 
 
@@ -49,27 +52,33 @@ if [ -f "/tmp/wasm/Makefile" ]; then
     rm -f /tmp/wasm/Makefile
 fi
 
-# move original wasm build, if it's a folder
-if [ -d "/var/www/venus/gui-v2" ] && [ ! -L "/var/www/venus/gui-v2" ] && [ ! -d "/var/www/venus/gui-v2.bak" ]; then
-    mv /var/www/venus/gui-v2 /var/www/venus/gui-v2.bak
-# remove if it's a symlink
-elif [ -L "/var/www/venus/gui-v2" ]; then
-    rm -f /var/www/venus/gui-v2
+if [ -d "/var/www/venus/gui-v2" ] && [ ! -L "/var/www/venus/gui-v2" ]; then
+    pathGuiWww="/var/www/venus/gui-v2"
+elif [ -d "/var/www/venus/gui-beta" ] && [ ! -L "/var/www/venus/gui-beta" ]; then
+    pathGuiWww="/var/www/venus/gui-beta"
 fi
-mv /tmp/wasm /var/www/venus/gui-v2
 
-cd /var/www/venus/gui-v2 || return
+# "remove" old files
+if [ -d "$pathGuiWww" ]; then
+    rm -rf "$pathGuiWww"
+fi
+mv /tmp/wasm "$pathGuiWww"
+
+cd "$pathGuiWww"
 
 # create missing files for VRM portal check
 if [ ! -f "venus-gui-v2.wasm.gz" ]; then
     echo "GZip WASM build..."
     gzip -k venus-gui-v2.wasm
-    echo "Create SHA256 checksum..."
-    sha256sum /var/www/venus/gui-v2/venus-gui-v2.wasm > /var/www/venus/gui-v2/venus-gui-v2.wasm.sha256
+    # echo "Create SHA256 checksum..."
+    # sha256sum venus-gui-v2.wasm > venus-gui-v2.wasm.sha256
+    rm -f venus-gui-v2.wasm
 fi
 
+rm -f /tmp/venus-webassembly.zip
+
 echo
-echo "The GUIv2 with the dbus-serialbattery mods was installed successfully."
+echo "The GUIv2 web version with the dbus-serialbattery mods was installed successfully."
 echo
 echo "Please check https://github.com/mr-manuel/venus-os_dbus-serialbattery_gui-v2/tree/master for more details."
 echo
