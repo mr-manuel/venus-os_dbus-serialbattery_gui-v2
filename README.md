@@ -1,4 +1,4 @@
-# Venus OS GUIv2 - Alpha
+# Venus OS GUIv2
 
 ## 🚨 NOTE 🚨
 
